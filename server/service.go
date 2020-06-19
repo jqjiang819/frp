@@ -29,7 +29,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fatedier/frp/assets"
 	"github.com/fatedier/frp/models/auth"
 	"github.com/fatedier/frp/models/config"
 	modelmetrics "github.com/fatedier/frp/models/metrics"
@@ -262,16 +261,9 @@ func NewService(cfg config.ServerCommonConf) (svr *Service, err error) {
 	var statsEnable bool
 	// Create dashboard web server.
 	if cfg.DashboardPort > 0 {
-		// Init dashboard assets
-		err = assets.Load(cfg.AssetsDir)
-		if err != nil {
-			err = fmt.Errorf("Load assets error: %v", err)
-			return
-		}
-
 		err = svr.RunDashboardServer(cfg.DashboardAddr, cfg.DashboardPort)
 		if err != nil {
-			err = fmt.Errorf("Create dashboard web server error, %v", err)
+			err = fmt.Errorf("Create dashboard api server error, %v", err)
 			return
 		}
 		log.Info("Dashboard listen on %s:%d", cfg.DashboardAddr, cfg.DashboardPort)

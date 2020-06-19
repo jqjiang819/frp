@@ -14,9 +14,7 @@
 
 package assets
 
-//go:generate statik -src=./frps/static -dest=./frps
 //go:generate statik -src=./frpc/static -dest=./frpc
-//go:generate go fmt ./frps/statik/statik.go
 //go:generate go fmt ./frpc/statik/statik.go
 
 import (
