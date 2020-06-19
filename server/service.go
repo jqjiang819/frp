@@ -320,7 +320,8 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn) {
 	case *msg.Login:
 		// server plugin hook
 		content := &plugin.LoginContent{
-			Login: *m,
+			Login:      *m,
+			RemoteAddr: conn.RemoteAddr().String(),
 		}
 		retContent, err := svr.pluginManager.Login(content)
 		if err == nil {
@@ -456,6 +457,20 @@ func (svr *Service) RegisterControl(ctlConn net.Conn, loginMsg *msg.Login) (err 
 	go func() {
 		// block until control closed
 		ctl.WaitClosed()
+
+		content := &plugin.LogoutContent{
+			UserInfo: plugin.UserInfo{
+				User:  ctl.loginMsg.User,
+				Metas: ctl.loginMsg.Metas,
+				RunId: ctl.loginMsg.RunId,
+			},
+			Timestamp: time.Now().Unix(),
+		}
+		_, err := ctl.pluginManager.Logout(content)
+		if err != nil {
+			xl.Warn("%v", err)
+		}
+
 		svr.ctlManager.Del(loginMsg.RunId, ctl)
 	}()
 	return

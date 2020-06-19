@@ -33,6 +33,12 @@ type Response struct {
 
 type LoginContent struct {
 	msg.Login
+	RemoteAddr string `json:"remote_addr"`
+}
+
+type LogoutContent struct {
+	UserInfo
+	Timestamp int64 `json:"timestamp"`
 }
 
 type UserInfo struct {

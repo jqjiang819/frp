@@ -22,6 +22,7 @@ const (
 	APIVersion = "0.1.0"
 
 	OpLogin       = "Login"
+	OpLogout      = "Logout"
 	OpNewProxy    = "NewProxy"
 	OpPing        = "Ping"
 	OpNewWorkConn = "NewWorkConn"
