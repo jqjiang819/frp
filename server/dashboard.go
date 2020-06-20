@@ -45,6 +45,7 @@ func (svr *Service) RunDashboardServer(addr string, port int) (err error) {
 
 	// api, see dashboard_api.go
 	router.HandleFunc("/api/serverinfo", svr.ApiServerInfo).Methods("GET")
+	router.HandleFunc("/api/clientinfo", svr.ApiClientInfo).Methods("GET")
 	router.HandleFunc("/api/proxy/{type}", svr.ApiProxyByType).Methods("GET")
 	router.HandleFunc("/api/proxy/{type}/{name}", svr.ApiProxyByTypeAndName).Methods("GET")
 	router.HandleFunc("/api/traffic/{name}", svr.ApiProxyTraffic).Methods("GET")

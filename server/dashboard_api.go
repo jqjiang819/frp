@@ -21,6 +21,7 @@ import (
 	"github.com/fatedier/frp/models/config"
 	"github.com/fatedier/frp/models/consts"
 	"github.com/fatedier/frp/models/metrics/mem"
+	"github.com/fatedier/frp/models/msg"
 	"github.com/fatedier/frp/utils/log"
 	"github.com/fatedier/frp/utils/version"
 
@@ -85,6 +86,47 @@ func (svr *Service) ApiServerInfo(w http.ResponseWriter, r *http.Request) {
 
 	buf, _ := json.Marshal(&svrResp)
 	res.Msg = string(buf)
+}
+
+type ClientInfo struct {
+	msg.Login
+	RemoteAddr string `json:"remote_addr"`
+}
+
+type ClientInfoResp struct {
+	Clients []*ClientInfo `json:"clients"`
+}
+
+// api/clientinfo
+func (svr *Service) ApiClientInfo(w http.ResponseWriter, r *http.Request) {
+	res := GeneralResponse{Code: 200}
+	defer func() {
+		log.Info("Http response [%s]: code [%d]", r.URL.Path, res.Code)
+		w.WriteHeader(res.Code)
+		if len(res.Msg) > 0 {
+			w.Write([]byte(res.Msg))
+		}
+	}()
+	log.Info("Http request: [%s]", r.URL.Path)
+
+	clientInfoResp := &ClientInfoResp{}
+	clientInfoResp.Clients = svr.GetAllClientsInfo()
+
+	buf, _ := json.Marshal(&clientInfoResp)
+	res.Msg = string(buf)
+}
+
+func (svr *Service) GetAllClientsInfo() (clientInfos []*ClientInfo) {
+	clients := svr.ctlManager.ctlsByRunId
+	clientInfos = make([]*ClientInfo, 0, len(clients))
+	for _, ctl := range clients {
+		userInfo := &ClientInfo{
+			Login:      *ctl.loginMsg,
+			RemoteAddr: ctl.conn.RemoteAddr().String(),
+		}
+		clientInfos = append(clientInfos, userInfo)
+	}
+	return
 }
 
 type BaseOutConf struct {
