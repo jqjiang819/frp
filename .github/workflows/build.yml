@@ -1,0 +1,52 @@
+name: FRP
+
+on:
+  push:
+    branches:
+      - rats
+
+jobs:
+  frp:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.14'
+
+      - name: Build
+        env:
+          GO111MODULE: "on"
+          CGO_ENABLED: 0
+        run: |
+          env GOOS=windows GOARCH=amd64 go build -ldflags "-s -w" -o ./release/frps_windows_amd64 ./cmd/frps
+          env GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w" -o ./release/frps_darwin_amd64 ./cmd/frps
+          env GOOS=freebsd GOARCH=amd64 go build -ldflags "-s -w" -o ./release/frps_freebsd_amd64 ./cmd/frps
+          env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o ./release/frps_linux_amd64 ./cmd/frps
+          env GOOS=linux GOARCH=arm64 go build -ldflags "-s -w" -o ./release/frps_linux_arm64 ./cmd/frps
+          env GOOS=linux GOARCH=mips64 go build -ldflags "-s -w" -o ./release/frps_linux_mips64 ./cmd/frps
+          env GOOS=linux GOARCH=mips GOMIPS=softfloat go build -ldflags "-s -w" -o ./release/frps_linux_mips ./cmd/frps
+          echo "::set-output name=status::success"
+          echo "::set-env name=BUILD_DATE::$(date +"%y%m%d.%H%M")"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.BUILD_DATE }}
+          release_name: FRP_${{ env.BUILD_DATE }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Assets
+        uses: csexton/release-asset-action@v2
+        with:
+          pattern: "./release/*"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-url: ${{ steps.create_release.outputs.upload_url }}
